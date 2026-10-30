@@ -66,28 +66,28 @@ Experimente selecionar uma unidade, conferir o estoque fictício, registrar uma 
 
 ## 🧪 Dados simulados e integrações
 
-| Recurso | Situação nesta versão |
-|---|---|
-| Pacientes e receitas | Fictícios, para teste |
-| Estoque e dispensações | Dados locais simulados |
-| Horários e presença de farmacêutico | Simulados, inclusive intervalos de almoço |
-| Estabelecimentos e endereços | Alguns nomes/endereços reais, com funcionamento não verificado pelo app |
-| CADSUS, BNAFAR, RNDS, CNES, REME e InfoSaúde | Representados por bases **mock**, sem conexão real |
-| Login gov.br | Fluxo visual simulado, sem autenticação oficial |
-| Google Maps / WhatsApp | Links externos para rota e compartilhamento |
+| Recurso                                      | Situação nesta versão                                                   |
+| -------------------------------------------- | ----------------------------------------------------------------------- |
+| Pacientes e receitas                         | Fictícios, para teste                                                   |
+| Estoque e dispensações                       | Dados locais simulados                                                  |
+| Horários e presença de farmacêutico          | Simulados, inclusive intervalos de almoço                               |
+| Estabelecimentos e endereços                 | Alguns nomes/endereços reais, com funcionamento não verificado pelo app |
+| CADSUS, BNAFAR, RNDS, CNES, REME e InfoSaúde | Representados por bases **mock**, sem conexão real                      |
+| Login gov.br                                 | Fluxo visual simulado, sem autenticação oficial                         |
+| Google Maps / WhatsApp                       | Links externos para rota e compartilhamento                             |
 
 A verificação de receitas utiliza **regras exemplificativas do desafio**; ela não substitui avaliação de farmacêutico ou conferência da legislação vigente.
 
 ## 🛠️ Arquivos principais
 
-| Arquivo | Finalidade |
-|---|---|
-| `login.html`, `login.css`, `login.js` | Tela de entrada com perfis fictícios |
-| `index.html` | Estrutura principal da aplicação |
-| `style.css`, `theme.js` | Estilos responsivos e temas |
-| `app.js` | Busca, navegação, regras e interações |
-| `data.js` | Base de dados demonstrativa |
-| `manifest.webmanifest` | Metadados da aplicação web |
+| Arquivo                               | Finalidade                            |
+| ------------------------------------- | ------------------------------------- |
+| `login.html`, `login.css`, `login.js` | Tela de entrada com perfis fictícios  |
+| `index.html`                          | Estrutura principal da aplicação      |
+| `style.css`, `theme.js`               | Estilos responsivos e temas           |
+| `app.js`                              | Busca, navegação, regras e interações |
+| `data.js`                             | Base de dados demonstrativa           |
+| `manifest.webmanifest`                | Metadados da aplicação web            |
 
 ## 🐞 Como relatar um problema
 

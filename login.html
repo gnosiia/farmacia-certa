@@ -1,57 +1,109 @@
 <!doctype html>
 <html lang="pt-BR">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#f5f8fc">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f5f8fc" />
     <title>Entrar | Farmácia Certa DF</title>
-    <link rel="stylesheet" href="login.css">
-</head>
+    <link rel="stylesheet" href="login.css" />
+  </head>
 
-<body><button class="login-theme-toggle theme-toggle" id="theme-toggle" type="button" aria-label="Ativar modo noturno"
-        aria-pressed="false">🌙 Modo noturno</button>
+  <body>
+    <button
+      class="login-theme-toggle theme-toggle"
+      id="theme-toggle"
+      type="button"
+      aria-label="Ativar modo noturno"
+      aria-pressed="false"
+    >
+      🌙 Modo noturno
+    </button>
     <main class="shell">
-        <div class="intro">
-            <div class="brand"><span class="plus">✚</span> farmácia<span class="light">certa</span> <small>DF</small>
-            </div>
-            <div class="hero-illustration" aria-hidden="true"><span>✚</span>
-                <div class="bubble bubble-a"></div>
-                <div class="bubble bubble-b"></div>
-            </div>
-            <h1>Seu cuidado começa aqui.</h1>
-            <p>Entre para consultar medicamentos, unidades e receitas de demonstração em um só lugar.</p>
-            <div class="intro-foot">Protótipo acadêmico · dados fictícios</div>
+      <div class="intro">
+        <div class="brand">
+          <span class="plus">✚</span> farmácia<span class="light">certa</span>
+          <small>DF</small>
         </div>
-        <section class="login-card" aria-labelledby="title">
-            <div class="topline"><span class="step">ACESSO DEMONSTRATIVO</span><span class="shield"
-                    aria-hidden="true">✧</span></div>
-            <h2 id="title">Boas-vindas!</h2>
-            <p class="subtitle">Faça login para continuar no Farmácia Certa DF.</p>
-            <div class="warning"><strong>SIMULAÇÃO — NÃO É GOV.BR</strong><span>Use informações inventadas. Nunca digite
-                    CPF ou senha verdadeira.</span></div>
-            <form id="demo-login"><label for="profile">Escolha um cidadão fictício cadastrado</label><select
-                    id="profile" name="profile" required>
-                    <option value="">Selecione seu perfil de demonstração</option>
-                </select>
-                <p class="hint">Cada perfil possui informações de exemplo vinculadas ao próprio cadastro.</p><label
-                    for="password">Senha de demonstração</label>
-                <div class="password-field"><input id="password" name="password" type="password"
-                        placeholder="Digite qualquer coisa" autocomplete="off" required maxlength="80"><button
-                        type="button" id="toggle" aria-label="Mostrar senha" aria-pressed="false">Mostrar</button></div>
-                <p class="hint">Escolha um dos usuários cadastrados e digite qualquer senha de teste. Não existe
-                    verificação real.</p><button type="submit" class="submit" id="enter">Entrar <span
-                        aria-hidden="true">→</span></button>
-                <p id="feedback" role="status" aria-live="polite" class="feedback"></p>
-            </form>
-            <div class="divider"><span>Ambiente 100% fictício</span></div>
-            <p class="bottom">Este acesso apenas simula a experiência de login. Não se conecta ao gov.br, SUS ou
-                DATASUS.</p>
-        </section>
+        <div class="hero-illustration" aria-hidden="true">
+          <span>✚</span>
+          <div class="bubble bubble-a"></div>
+          <div class="bubble bubble-b"></div>
+        </div>
+        <h1>Seu cuidado começa aqui.</h1>
+        <p>
+          Entre para consultar medicamentos, unidades e receitas de demonstração
+          em um só lugar.
+        </p>
+        <div class="intro-foot">Protótipo acadêmico · dados fictícios</div>
+      </div>
+      <section class="login-card" aria-labelledby="title">
+        <div class="topline">
+          <span class="step">ACESSO DEMONSTRATIVO</span
+          ><span class="shield" aria-hidden="true">✧</span>
+        </div>
+        <h2 id="title">Boas-vindas!</h2>
+        <p class="subtitle">Faça login para continuar no Farmácia Certa DF.</p>
+        <div class="warning">
+          <strong>SIMULAÇÃO — NÃO É GOV.BR</strong
+          ><span
+            >Use informações inventadas. Nunca digite CPF ou senha
+            verdadeira.</span
+          >
+        </div>
+        <form id="demo-login">
+          <label for="profile">Escolha um cidadão fictício cadastrado</label
+          ><select id="profile" name="profile" required>
+            <option value="">Selecione seu perfil de demonstração</option>
+          </select>
+          <p class="hint">
+            Cada perfil possui informações de exemplo vinculadas ao próprio
+            cadastro.
+          </p>
+          <label for="password">Senha de demonstração</label>
+          <div class="password-field">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Digite qualquer coisa"
+              autocomplete="off"
+              required
+              maxlength="80"
+            /><button
+              type="button"
+              id="toggle"
+              aria-label="Mostrar senha"
+              aria-pressed="false"
+            >
+              Mostrar
+            </button>
+          </div>
+          <p class="hint">
+            Escolha um dos usuários cadastrados e digite qualquer senha de
+            teste. Não existe verificação real.
+          </p>
+          <button type="submit" class="submit" id="enter">
+            Entrar <span aria-hidden="true">→</span>
+          </button>
+          <p
+            id="feedback"
+            role="status"
+            aria-live="polite"
+            class="feedback"
+          ></p>
+        </form>
+        <div class="divider"><span>Ambiente 100% fictício</span></div>
+        <p class="bottom">
+          Este acesso apenas simula a experiência de login. Não se conecta ao
+          gov.br, SUS ou DATASUS.
+        </p>
+      </section>
     </main>
     <script src="theme.js"></script>
     <script src="data.js"></script>
     <script src="login.js"></script>
-</body>
-
+  </body>
 </html>

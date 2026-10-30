@@ -1,1 +1,9 @@
-{"name":"Farmácia Certa DF — Demonstração","short_name":"Farmácia Certa","start_url":"./index.html","display":"standalone","background_color":"#ffffff","theme_color":"#1760a7","description":"Consulta demonstrativa com dados fictícios sobre medicamentos no DF"}
+{
+  "name": "Farmácia Certa DF — Demonstração",
+  "short_name": "Farmácia Certa",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1760a7",
+  "description": "Consulta demonstrativa com dados fictícios sobre medicamentos no DF"
+}
