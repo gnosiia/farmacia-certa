@@ -7,11 +7,22 @@ html {
     -apple-system,
     "Segoe UI",
     sans-serif;
-  color: #17354c;
+  color: var(--login-text);
+  color-scheme: light;
+  --login-text: #17354c;
+  --login-muted: #597183;
+  --login-surface: #ffffff;
+  --login-field: #ffffff;
+  --login-line: #d7e4ed;
+  --login-focus: #efa71b;
+  --login-button-text: #ffffff;
+  --login-button-surface: #eef5fb;
+  --login-divider: #e1eaf0;
+  --login-bg: #f5f8fc;
 }
 body {
   margin: 0;
-  background: #f5f8fc;
+  background: var(--login-bg);
   min-height: 100svh;
 }
 button,
@@ -23,7 +34,7 @@ button {
 }
 button:focus-visible,
 input:focus-visible {
-  outline: 3px solid #efa71b;
+  outline: 3px solid var(--login-focus);
   outline-offset: 3px;
 }
 .shell {
@@ -60,7 +71,7 @@ input:focus-visible {
 }
 .plus {
   display: inline-block;
-  background: white;
+  background: var(--login-surface);
   color: #16768a;
   border-radius: 9px;
   padding: 0 8px;
@@ -77,7 +88,7 @@ input:focus-visible {
 .hero-illustration > span {
   display: grid;
   place-items: center;
-  background: #fff;
+  background: var(--login-surface);
   border: 2px solid #b2d1e5;
   border-radius: 26px;
   height: 130px;
@@ -113,20 +124,20 @@ input:focus-visible {
   max-width: 340px;
 }
 .intro p {
-  color: #597183;
+  color: var(--login-muted);
   max-width: 340px;
   margin: 0;
   line-height: 1.55;
 }
 .intro-foot {
   font-size: 0.8rem;
-  color: #667b88;
+  color: var(--login-muted);
   margin-top: 40px;
 }
 .login-card {
-  background: #fff;
+  background: var(--login-surface);
   padding: 38px 34px;
-  border: 1px solid #d7e4ed;
+  border: 1px solid var(--login-line);
   border-radius: 22px;
   box-shadow: 0 12px 32px #17354c0b;
 }
@@ -181,8 +192,8 @@ input {
   border: 1.5px solid #afc5d7;
   border-radius: 10px;
   padding: 12px;
-  background: #fff;
-  color: #15364c;
+  background: var(--login-field);
+  color: var(--login-text);
   font-size: 1rem;
 }
 .password-field {
@@ -197,7 +208,7 @@ input {
   top: 8px;
   border: none;
   color: #155c99;
-  background: #eef5fb;
+  background: var(--login-button-surface);
   border-radius: 7px;
   padding: 8px;
   font-size: 0.81rem;
@@ -213,7 +224,7 @@ input {
   width: 100%;
   border: 0;
   background: #1763ac;
-  color: white;
+  color: var(--login-button-text);
   min-height: 54px;
   border-radius: 11px;
   font-weight: 800;
@@ -236,14 +247,14 @@ input {
   margin: 8px 0 0;
 }
 .divider {
-  border-top: 1px solid #e1eaf0;
+  border-top: 1px solid var(--login-divider);
   text-align: center;
   margin-top: 25px;
 }
 .divider span {
   font-size: 0.74rem;
   color: #748696;
-  background: white;
+  background: var(--login-surface);
   padding: 0 10px;
   position: relative;
   top: -11px;
@@ -322,13 +333,13 @@ select {
   border: 1.5px solid #afc5d7;
   border-radius: 10px;
   padding: 12px;
-  background: #fff;
-  color: #15364c;
+  background: var(--login-field);
+  color: var(--login-text);
   font: inherit;
   font-size: 16px;
 }
 select:focus-visible {
-  outline: 3px solid #efa71b;
+  outline: 3px solid var(--login-focus);
   outline-offset: 3px;
 }
 
@@ -338,38 +349,48 @@ select:focus-visible {
   top: 12px;
   z-index: 10;
   border: 1px solid #a4bfd3;
-  background: #fff;
-  color: #17496a;
+  background: var(--login-surface);
+  color: var(--login-text);
   border-radius: 28px;
   padding: 10px 14px;
   min-height: 44px;
   box-shadow: 0 3px 12px #0002;
 }
 html[data-theme="dark"] {
+  --login-text: #e9f2ff;
+  --login-muted: #bbcede;
+  --login-surface: #16283a;
+  --login-field: #0f2334;
+  --login-line: #345066;
+  --login-focus: #ffd166;
+  --login-button-text: #07131f;
+  --login-button-surface: #1a3349;
+  --login-divider: #345066;
+  --login-bg: #0b1623;
   color-scheme: dark;
 }
 html[data-theme="dark"] body {
-  background: #0b1623;
-  color: #e9f2ff;
+  background: var(--login-bg);
+  color: var(--login-text);
 }
 html[data-theme="dark"] .intro {
   background: linear-gradient(150deg, #183650, #153e38);
   color: #e9f2ff;
 }
 html[data-theme="dark"] .login-card {
-  background: #16283a;
-  color: #e9f2ff;
-  border-color: #345066;
+  background: var(--login-surface);
+  color: var(--login-text);
+  border-color: var(--login-line);
 }
 html[data-theme="dark"] .subtitle,
 html[data-theme="dark"] .hint,
 html[data-theme="dark"] .bottom {
-  color: #bbcede;
+  color: var(--login-muted);
 }
 html[data-theme="dark"] select,
 html[data-theme="dark"] input {
-  background: #0f2334;
-  color: #e9f2ff;
+  background: var(--login-field);
+  color: var(--login-text);
   border-color: #567189;
 }
 html[data-theme="dark"] .warning {
@@ -379,7 +400,7 @@ html[data-theme="dark"] .warning {
 }
 html[data-theme="dark"] .login-theme-toggle {
   background: #1a3349;
-  color: #e9f2ff;
+  color: var(--login-text);
   border-color: #55718a;
 }
 @media (max-width: 700px) {
