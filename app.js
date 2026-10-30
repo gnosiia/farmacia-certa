@@ -10,6 +10,8 @@ const app = {
   unit: 1,
   patient: null,
   font: 0,
+  easy: true, // Consulta acessível igual para todos; não existe alternância de modo.
+  showAllEasy: false,
   filter: "todos",
   recipe: null,
 };
@@ -79,6 +81,48 @@ try {
     app.patient = PAC.find((p) => p.id === pid) || null;
   }
 } catch (e) {}
+// Única navegação: fluxo de consulta simplificado para qualquer idade.
+// O tamanho do texto continua ajustável como recurso de acessibilidade.
+const FONT_PREFIX = "fcdf-font-px:";
+const fontKey = () => FONT_PREFIX + (app.patient?.id || "visitante");
+let textPx = 16;
+function initPreferences() {
+  try {
+    const raw=localStorage.getItem(fontKey());
+    const n=Number(raw);
+    textPx=raw!==null && n>=16 && n<=28 && n%2===0 ? n : 16;
+  } catch (e) { textPx=16; }
+  applyPreferences();
+}
+function applyPreferences() {
+  document.documentElement.style.fontSize=`${textPx}px`;
+  const text=document.querySelector(".account-shortcut");
+  if (text) text.textContent=app.patient ? "♙ " + app.patient.n.split(" ")[0] : "♙ Minha conta";
+}
+function adjustText(delta) {
+  textPx = Math.min(28, Math.max(16, textPx + delta));
+  try { localStorage.setItem(fontKey(), String(textPx)); } catch (e) {}
+  applyPreferences();
+  toast("Tamanho das letras ajustado.");
+}
+function readPage() {
+  if (!("speechSynthesis" in window)) {
+    toast("Leitura em voz alta não está disponível neste navegador.");
+    return;
+  }
+  if (speechSynthesis.speaking) {
+    speechSynthesis.cancel();
+    toast("Leitura interrompida.");
+    return;
+  }
+  const content = $("content")?.innerText?.slice(0, 4200) || "";
+  if (!content.trim()) return;
+  const utterance = new SpeechSynthesisUtterance(content);
+  utterance.lang = "pt-BR";
+  utterance.rate = 0.88;
+  speechSynthesis.speak(utterance);
+  toast("Lendo as informações da página. Toque em Ouvir para interromper.");
+}
 const esc = (s) =>
   String(s ?? "").replace(
     /[&<>"']/g,
@@ -183,8 +227,10 @@ function route(p) {
   app.page = p;
   render();
   window.scrollTo({ top: 0, behavior: "instant" });
+  $("content")?.focus({ preventScroll: true });
 }
 function render() {
+  applyPreferences();
   document.querySelectorAll("[data-nav]").forEach((b) => {
     const on = b.dataset.nav === app.page;
     b.classList.toggle("active", on);
@@ -203,50 +249,109 @@ function render() {
     acesso,
   };
   $("content").innerHTML = (views[app.page] || inicio)();
+  $("global-search").value=app.query;
   bindView();
+  if (app.page==="consulta") loadMedicinePhotos();
+}
+function homeTile(name, title, description, page, isPrimary = false) {
+  return `<button class="health-tile ${isPrimary ? "featured" : ""}" data-nav="${page}">
+    <span class="health-icon">${fcIcon(name)}</span>
+    <span class="health-tile-label"><b>${title}</b><small>${description}</small></span>
+    <span class="tile-chevron" aria-hidden="true">${fcIcon("chevron")}</span>
+  </button>`;
 }
 function inicio() {
-  return `<section class="hero"><div><h1>Seu cuidado, mais simples.</h1><p>Encontre medicamentos, confira as unidades e saiba o que levar antes de sair de casa.</p><button class="btn primary" data-action="recipe">▣ &nbsp;Consultar minha receita <span aria-hidden="true">›</span></button><div class="eyebrow">♢ Ambiente demonstrativo, sem dados reais de pacientes</div></div><div class="hero-art" aria-hidden="true">📋</div></section>
-<section class="mobile-only panel" style="margin-bottom:0"><h2>Olá! Vamos cuidar de você hoje?</h2><div class="searchline"><input id="mobile-search" aria-label="Buscar medicamento" placeholder="⌕ Buscar na farmácia" value="${esc(app.query)}"><button class="btn" data-action="voice" aria-label="Busca por voz">🎙</button><button class="btn primary" data-action="search">Buscar</button></div></section>
-<section><h2 class="section-title">O que você precisa hoje?</h2><p class="sub">Escolha uma opção para começar.</p><div class="category-grid">
-${[
-  ["💊", "Medicamentos", "Referência, genéricos e similares"],
-  ["♡", "Vitaminas", "Vitaminas e suplementos"],
-  ["♧", "Higiene", "Higiene pessoal e proteção"],
-  ["☘", "Cuidados diários", "Bem-estar em todas as idades"],
-]
-  .map(
-    ([ico, name, sub], i) =>
-      `<button class="category" data-action="category" data-id="${i}"><span class="cat-icon">${ico}</span><span><b>${name}</b><small>${sub}</small></span><span class="chev">›</span></button>`,
-  )
-  .join("")}</div></section>
-<section class="help-banner"><span style="font-size:1.6rem">♧</span><div><b>Precisa de ajuda? Conte com a gente.</b><p>Encontre orientações sobre medicamentos, documentação e atendimento.</p></div><button class="btn sm" data-nav="ajuda">Ver orientações ›</button></section>`;
+  const person = app.patient ? `, ${esc(app.patient.n.split(" ")[0])}` : "";
+  return `<section class="hero home-hero">
+    <div><span class="hero-eyebrow">FARMÁCIA CERTA DF · DEMONSTRAÇÃO</span>
+    <h1>Olá${person}! Como podemos ajudar?</h1>
+    <p>Consulte um medicamento, confira o horário e veja o caminho até a farmácia antes de sair de casa.</p>
+    <button class="btn hero-cta" data-nav="consulta">${fcIcon("search")} Procurar meu remédio ${fcIcon("chevron")}</button>
+    </div><div class="hero-art" aria-hidden="true">${fcIcon("pill")}</div>
+  </section>
+  <section class="home-options" aria-labelledby="actions-heading">
+    <h2 class="section-title" id="actions-heading">O que você precisa hoje?</h2>
+    <p class="sub">Toque em uma opção para começar. Você não precisa se cadastrar para consultar.</p>
+    <div class="health-grid">
+      ${homeTile("pill", "Procurar remédio", "Onde encontrar e disponibilidade", "consulta", true)}
+      ${homeTile("clock", "Horários e locais", "Veja atendimento e rota", "unidades")}
+      ${homeTile("prescription", "Conferir receita", "Orientação sobre documentos", "receitas")}
+      ${homeTile("help", "Preciso de ajuda", "Instruções passo a passo", "ajuda")}
+    </div>
+  </section>
+  <section class="help-banner"><span class="help-banner-icon">${fcIcon("info")}</span><div><b>Atenção: este é um protótipo.</b>
+    <p>Medicamentos, estoques e horários são simulados. Confirme tudo com a unidade antes de ir.</p></div>
+    <button class="btn sm" data-nav="sobre">Entenda a simulação</button></section>
+  <section class="panel extras-panel"><h2>Mais recursos da demonstração</h2><div class="inline-actions">
+  <button class="btn sm" data-nav="farmacia">${fcIcon("store")} Área da farmácia</button>
+  <button class="btn sm" data-nav="integracoes">${fcIcon("hospital")} Bases simuladas</button>
+  <button class="btn sm" data-nav="acesso">${fcIcon("account")} Minha conta</button>
+  </div></section>`;
 }
-function consulta() {
-  const opts = M.filter(
-    (m) =>
-      (m.n + " " + m.a + " " + m.c)
-        .toLowerCase()
-        .includes(app.query.toLowerCase()) && !app.selected.includes(m.id),
-  ).slice(0, 12);
-  return `<section class="panel"><h2>Encontrar medicamento</h2><p class="sub">Pesquise por nome, princípio ativo ou concentração. Você pode escolher vários itens.</p><div class="searchline"><input id="medicine-search" autocomplete="off" placeholder="Ex.: losartana, insulina, 50 mg" value="${esc(app.query)}"><button class="btn" data-action="voice" aria-label="Pesquisar por voz">🎙</button><button class="btn primary" data-action="search">Buscar</button></div><div id="suggestions" class="suggestions">${suggestions(opts)}</div><div class="tags">${app.selected.map((id) => `<span class="tag">${esc(med(id).n)} ${esc(med(id).c)} <button aria-label="Remover ${esc(med(id).n)}" data-action="remove-med" data-id="${id}">×</button></span>`).join("")}</div><div class="row"><button class="btn primary" data-action="results" ${!app.selected.length ? "disabled" : ""}>Ver unidades e disponibilidade</button><button class="btn sm" data-action="reset-search">Limpar</button></div></section><div class="panel"><label for="source-filter"><b>Pesquisar em</b></label> <select id="source-filter" aria-label="Tipo de farmácia"><option value="todos" ${app.filter === "todos" ? "selected" : ""}>Todas as farmácias</option><option value="publicas" ${app.filter === "publicas" ? "selected" : ""}>Rede pública SUS</option><option value="comerciais" ${app.filter === "comerciais" ? "selected" : ""}>Farmácias comerciais</option></select></div><div id="results">${app.selected.length ? results() : ""}</div>`;
+function easyConsulta() {
+  const opts=findMedMatches(app.query,8).map(x=>x.med).filter(m=>!app.selected.includes(m.id));
+  return `<div class="easy-flow"><button class="back-home" data-nav="inicio">← Voltar ao início</button>
+    <section class="panel"><h1>${fcIcon("pill")} Qual remédio você procura?</h1>
+      <p>Digite o remédio ou toque em <b>Falar</b>.</p>
+      <label for="medicine-search" class="strong-label">Nome do remédio</label>
+      <div class="searchline medicine-searchline"><div class="medicine-input-wrap">
+        <input id="medicine-search" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" spellcheck="false" aria-controls="suggestions" placeholder="Ex.: Dipirona" value="${esc(app.query)}" />
+        <button class="btn voice-easy" type="button" data-action="voice" aria-label="Falar o nome do remédio" aria-pressed="false">${fcIcon("mic")} <span>Falar</span></button>
+      </div></div>
+      <div id="suggestions" class="suggestions" aria-label="Sugestões de remédios" aria-live="polite">${suggestions(opts)}</div>
+      <div class="tags">${app.selected.map(id=>`<span class="tag">${esc(med(id)?.n || "")} ${esc(med(id)?.c || "")}<button data-action="remove-med" data-id="${id}" aria-label="Remover medicamento">×</button></span>`).join("")}</div>
+      ${app.selected.length ? `<div class="selected-medicine-images">${app.selected.map(id=>med(id)).filter(Boolean).map(m=>`<div class="selected-medicine">${medPhotoMarkup(m)}<div><b>${esc(m.n)}</b><p class="small muted">${esc(m.c)} · ${esc(m.f)}. Confira o nome e a apresentação na receita.</p></div></div>`).join("")}</div>` : ""}
+      <button class="btn primary easy-search-btn" data-action="search">${fcIcon("search")} Procurar nas farmácias</button>
+      <p class="small muted">Você pode escolher mais de um remédio. Estoques e horários são fictícios.</p>
+    </section>
+    <section class="panel"><label class="strong-label" for="source-filter">Quais farmácias você quer ver?</label>
+    <select id="source-filter"><option value="todos" ${app.filter === "todos" ? "selected" : ""}>Todas</option><option value="publicas" ${app.filter === "publicas" ? "selected" : ""}>Unidades SUS</option><option value="comerciais" ${app.filter === "comerciais" ? "selected" : ""}>Farmácias comerciais</option></select>
+    <label class="strong-label" for="hour">Qual horário você quer simular?</label>
+    <select id="hour">${[8,10,11,12,13,15,18,21].map(h=>`<option value="${h}" ${app.hour===h?"selected":""}>${String(h).padStart(2,"0")}h</option>`).join("")}</select>
+    <p class="small muted">O horário mostrado não é o horário real de hoje.</p></section>
+    <div id="results" aria-live="polite">${app.selected.length ? results() : ""}</div>
+  </div>`;
 }
+function consulta() { return easyConsulta(); }
 function suggestions(opts) {
-  return (
-    opts
-      .map(
-        (m) =>
-          `<button data-action="add-med" data-id="${m.id}">＋ ${esc(m.n)} · ${esc(m.c)} · ${esc(m.f)}</button>`,
-      )
-      .join("") ||
-    '<p class="small muted">Nenhum resultado adicional. Experimente outro termo.</p>'
-  );
+  if (app.query.trim().length < 2) return "";
+  return opts.length
+    ? `<p class="small suggestion-intro">Selecione o remédio correto:</p>` + opts.map(m=>
+        `<button data-action="add-med" data-id="${m.id}">${fcIcon("pill")} <span><b>${esc(m.n)}</b><small>${esc(m.c)} · ${esc(m.f)}</small></span></button>`).join("")
+    : '<p class="small muted">Não encontrei esse remédio na lista de demonstração. Verifique o nome.</p>';
 }
 function resultItem(m, u) {
   const s = stock(m, u);
   return `<div class="item"><b>${esc(m.n)} · ${esc(m.c)} · ${esc(m.f)}</b>${badge(s.kind, s.label)} <span class="small muted">${esc(s.msg)}</span>${s.x ? `<div class="small muted">Saldo fictício: ${s.x.q} · lote ${esc(s.x.lote)} · atualizado em ${ago(s.x.t)}</div>` : ""}<div class="small muted">Documentação: ${esc(m.rq)}</div></div>`;
 }
+function easyResults() {
+  const selected = app.selected.map(med).filter(Boolean);
+  if (!selected.length) return "";
+  const items = U.filter(u=>app.filter === "todos" || (app.filter === "comerciais" ? u.comercial : !u.comercial))
+    .map(u=>({u, matches:selected.filter(m=>supply(m,u))})).filter(x=>x.matches.length)
+    .sort((a,b)=>{
+      const good = x=>x.matches.filter(m=>stock(m,x.u).kind==="verde").length;
+      const ready = x=>Number(x.matches.length === selected.length && good(x) === selected.length && isOpen(x.u));
+      return ready(b)-ready(a) || good(b)-good(a) || b.matches.length-a.matches.length;
+    });
+  const visible = app.showAllEasy ? items : items.slice(0, 5);
+  return `<div class="easy-results"><h2>${fcIcon("hospital")} Farmácias encontradas (${items.length})</h2>
+  <div class="alert info">Consulta feita para as ${String(app.hour).padStart(2,"0")}h (horário simulado). Não representam estoque ou funcionamento real.</div>
+  ${visible.map(({u,matches})=>`<article class="easy-unit panel">
+    <h3>${esc(u.n)}</h3>
+    <p><b>${fcIcon("clock")} Horário:</b> ${esc(scheduleText(u))}</p>
+    ${closed(u) ? `<div class="alert">${fcIcon("alert")} Sem atendimento no horário simulado: ${esc(closed(u))}</div>` : `<p class="easy-open">${fcIcon("check")} Atendimento no horário simulado</p>`}
+    <div class="easy-medications">${matches.map(m=>`<div class="easy-med"><b>${esc(m.n)} ${esc(m.c)}</b><div>${badge(stock(m,u).kind,stock(m,u).label)}</div></div>`).join("")}</div>
+    <p class="small muted">${esc(u.addr || u.loc || u.ra)}</p>
+    <div class="easy-actions"><button class="btn primary" data-action="route-link" data-id="${u.id}">${fcIcon("route")} Ver rota</button>
+    <button class="btn" data-action="whatsapp" data-id="${u.id}">${fcIcon("chat")} WhatsApp</button>
+    <button class="btn" data-action="guide" data-id="${u.id}">${fcIcon("info")} Antes de ir</button></div>
+  </article>`).join("") || `<div class="panel">Nenhuma unidade da simulação fornece este medicamento.</div>`}
+  ${!app.showAllEasy && items.length > 5 ? `<button class="btn" data-action="show-more-units">Mostrar outras ${items.length - 5} unidades</button>` : ""}
+  <button class="btn" data-action="reset-search">${fcIcon("search")} Fazer nova pesquisa</button></div>`;
+}
 function results() {
+  if (app.easy) return easyResults();
   const selected = app.selected.map(med).filter(Boolean);
   const units = U.filter(
     (u) =>
@@ -287,7 +392,7 @@ function results() {
                 m.cat === "controlado" ||
                 m.cat === "especializado",
             );
-            return `<article class="panel"><div class="unit-top"><h3>${esc(u.n)}</h3>${badge(v.ready ? "verde" : v.complete ? "amarelo" : "cinza", v.ready ? "Melhor condição" : v.complete ? "Todos os itens" : "Parcial")}</div><p class="small muted">${esc(u.ra)} · ${esc(u.t)} · ${u.comercial ? "REDE COMERCIAL · FILIAL E ESTOQUE FICTÍCIOS" : "CNES fictício " + esc(u.cnes)}</p><p class="small"><b>Endereço:</b> ${esc(u.addr || u.loc || u.ra)}</p><p class="small"><b>Horário:</b> ${scheduleText(u)}</p><p class="small muted"><b>Almoço:</b> ${breakText(u)} · <b>Carga diária:</b> ${workHours(u)}h ${reduced(u) ? "· horário reduzido" : ""}</p><p>${badge(isOpen(u) ? "verde" : "vermelho", isOpen(u) ? "Farmácia aberta" : "Farmácia fechada")} ${badge(hasPh(u) ? "verde" : "amarelo", hasPh(u) ? "Farmacêutico confirmado" : "Farmacêutico não confirmado")}</p>${closed(u) ? `<div class="alert">Motivo no horário simulado: ${esc(closed(u))}.</div>` : ""}${reduced(u) ? '<div class="alert info">Esta unidade tem atendimento em horário reduzido na simulação.</div>' : ""}${need && !hasPh(u) ? '<div class="alert">Algum medicamento exige conferência farmacêutica. Confirme o atendimento antes do deslocamento.</div>' : ""}${v.matched.map((m) => resultItem(m, u)).join("")}${
+            return `<article class="panel"><div class="unit-top"><h3>${esc(u.n)}</h3>${badge(v.ready ? "verde" : v.complete ? "amarelo" : "cinza", v.ready ? "Melhor condição" : v.complete ? "Todos os itens" : "Parcial")}</div><p class="small muted">${esc(u.ra)} · ${esc(u.t)} · ${u.comercial ? "REDE COMERCIAL · FILIAL E ESTOQUE FICTÍCIOS" : "CNES fictício " + esc(u.cnes)}</p><p class="small"><b>Endereço:</b> ${esc(u.addr || u.loc || u.ra)}</p><p class="small"><b>Horário:</b> ${scheduleText(u)}</p><p class="small muted"><b>Almoço:</b> ${breakText(u)} · <b>Carga diária:</b> ${workHours(u)}h ${reduced(u) ? "· horário reduzido" : ""}</p><p>${badge(isOpen(u) ? "verde" : "vermelho", isOpen(u) ? "Aberta no horário simulado" : "Fechada no horário simulado")} ${badge(hasPh(u) ? "verde" : "amarelo", hasPh(u) ? "Farmacêutico confirmado" : "Farmacêutico não confirmado")}</p>${closed(u) ? `<div class="alert">Motivo no horário simulado: ${esc(closed(u))}.</div>` : ""}${reduced(u) ? '<div class="alert info">Esta unidade tem atendimento em horário reduzido na simulação.</div>' : ""}${need && !hasPh(u) ? '<div class="alert">Algum medicamento exige conferência farmacêutica. Confirme o atendimento antes do deslocamento.</div>' : ""}${v.matched.map((m) => resultItem(m, u)).join("")}${
               !v.complete
                 ? `<p class="small muted"><b>Não fornece:</b> ${selected
                     .filter((m) => !supply(m, u))
@@ -347,7 +452,8 @@ function recipeCheck(r) {
   if (!r.date) issues.push("Data de emissão não preenchida.");
   else {
     const d = new Date(r.date + "T12:00:00").getTime();
-    if (d > Date.now()) issues.push("Data de emissão no futuro.");
+    if (Number.isNaN(d)) issues.push("Data de emissão inválida.");
+    else if (d > Date.now()) issues.push("Data de emissão no futuro.");
     else if (days(d) > recipeRules[r.kind])
       issues.push(
         `Prazo demonstrativo excedido (${recipeRules[r.kind]} dias).`,
@@ -366,18 +472,26 @@ function recipeCheck(r) {
   return { issues, m };
 }
 function acesso() {
-  let nome = "Visitante";
-  try {
-    nome = sessionStorage.getItem("fcdf-demo-name") || "Visitante";
-  } catch (e) {}
-  return `<section class="panel"><h1>Minha conta</h1><div class="alert info">Sessão demonstrativa — não é gov.br. Não há acesso a dados reais.</div><div class="row space-between"><div><b>Olá, ${esc(nome)}!</b><p class="small muted">Perfil cadastrado: ${esc(app.patient?.id || "não identificado")} · Acesso fictício</p></div></div><div class="row" style="gap:12px;flex-wrap:wrap"><button class="btn primary" data-nav="receitas">Minhas receitas de exemplo</button><button class="btn" data-nav="consulta">Consultar medicamentos</button><button class="btn" data-action="logout">Sair da conta</button></div></section>`;
+  const p = app.patient;
+  return `<section class="panel account-panel"><h1>${fcIcon("account")} Minha conta</h1>
+  <div class="alert info">Ambiente demonstrativo, sem gov.br e sem dados de pacientes reais.</div>
+  ${p ? `<h2>Olá, ${esc(p.n.split(" ")[0])}!</h2><p>Perfil fictício: ${esc(p.id)}.</p>
+    <div class="inline-actions"><button class="btn primary" data-nav="receitas">${fcIcon("prescription")} Minhas receitas de exemplo</button>
+    <button class="btn" data-action="logout">${fcIcon("logout")} Sair da conta</button></div>` :
+    `<h2>Você está navegando como visitante.</h2><p>É possível consultar medicamentos, horários, rotas e orientações sem criar cadastro.</p>
+    <div class="inline-actions"><a class="btn primary" href="login.html">${fcIcon("account")} Entrar ou criar perfil fictício</a>
+    <button class="btn" data-nav="consulta">${fcIcon("search")} Continuar sem cadastro</button></div>`}
+  </section>`;
 }
 function receitas() {
   const p = app.patient;
-  return `<section class="panel"><h2>Minhas receitas</h2><div class="alert info">Demonstração. Não há acesso ao gov.br, CADSUS ou RNDS reais. Não digite CPF, CNS ou receitas verdadeiros.</div>${p ? `<div class="row space-between"><div><b>Olá, ${esc(p.n.split(" ")[0])}!</b><div class="small muted">Paciente fictício ${esc(p.id)} · CNS demonstrativo mascarado</div></div><button class="btn sm" data-action="logout">Sair</button></div>${(p.rx || []).map((r) => `<div class="item"><b>${esc(med(r.m)?.n || "Medicamento")} ${esc(med(r.m)?.c || "")}</b><span class="small muted">Receita simulada · ${datefmt(r.d)} · ${esc(r.pre)}</span><div><button class="btn sm" data-action="add-med" data-id="${r.m}">Ver onde encontrar</button></div></div>`).join("")}` : `<div class="auth-invite"><div><b>Suas receitas em um só lugar</b><p class="sub">Use um perfil fictício para visualizar prescrições de exemplo. Nenhum dado real é utilizado.</p></div><button class="btn primary" data-nav="acesso">Entrar — simulação de acesso</button></div>`}</section><section class="panel"><h2>Conferir requisitos de uma receita</h2><p class="sub">Prazos configurados apenas para demonstrar os cenários citados no desafio. A validade legal depende do medicamento, receituário e regras vigentes.</p><form id="recipe-form"><div class="two-col"><div class="field"><label for="rx-med">Medicamento</label><select id="rx-med" name="medId">${M.map((m) => `<option value="${m.id}">${esc(m.n)} ${esc(m.c)}</option>`).join("")}</select></div><div class="field"><label for="rx-kind">Categoria da prescrição</label><select id="rx-kind" name="kind"><option value="comum">Comum (cenário: 6 meses)</option><option value="continuo">Uso contínuo comum (6 meses)</option><option value="antibiotico">Antibiótico (10 dias)</option><option value="antibioticoContinuo">Antibiótico contínuo (3 meses)</option><option value="controlado">Controlado (30 dias)</option><option value="especializado">Especializado (exemplo: 90 dias)</option></select></div><div class="field"><label for="rx-type">Receituário apresentado</label><select id="rx-type" name="type"><option>Receita simples</option><option>Receita com retenção</option><option>Controle especial</option><option>Laudo + formulário</option></select></div><div class="field"><label for="rx-date">Data de emissão</label><input type="date" id="rx-date" name="date" value="${new Date().toLocaleDateString("en-CA")}"></div><div class="field"><label for="rx-conc">Concentração (opcional)</label><input id="rx-conc" name="concentration" placeholder="Ex.: 50 mg"></div><div class="field"><label for="rx-qty">Quantidade prescrita</label><input id="rx-qty" name="qty" type="number" min="1" value="30"></div></div><div class="field checkbox"><label><input type="checkbox" name="prescriber" checked> Prescritor identificado com nome e registro</label></div><button class="btn primary" type="submit">Verificar requisitos</button></form><div id="rx-output">${app.recipe || ""}</div></section>`;
+  return `<section class="panel"><h2>Minhas receitas</h2><div class="alert info">Demonstração. Não há acesso ao gov.br, CADSUS ou RNDS reais. Não digite CPF, CNS ou receitas verdadeiros.</div>${p ? `<div class="row space-between"><div><b>Olá, ${esc(p.n.split(" ")[0])}!</b><div class="small muted">Paciente fictício ${esc(p.id)} · CNS demonstrativo mascarado</div></div><button class="btn sm" data-action="logout">Sair</button></div>${(p.rx || []).map((r) => `<div class="item"><b>${esc(med(r.m)?.n || "Medicamento")} ${esc(med(r.m)?.c || "")}</b><span class="small muted">Receita simulada · ${datefmt(r.d)} · ${esc(r.pre)}</span><div><button class="btn sm" data-action="add-med" data-id="${r.m}">Ver onde encontrar</button></div></div>`).join("")}` : `<div class="auth-invite"><div><b>Suas receitas em um só lugar</b><p class="sub">Use um perfil fictício para visualizar prescrições de exemplo. Nenhum dado real é utilizado.</p></div><button class="btn primary" data-nav="acesso">Entrar — simulação de acesso</button></div>`}</section><section class="panel"><h2>Conferir requisitos de uma receita</h2><p class="sub">Prazos configurados apenas para demonstrar os cenários citados no desafio. A validade legal depende do medicamento, receituário e regras vigentes.</p><form id="recipe-form"><div class="two-col"><div class="field"><label for="rx-med">Medicamento</label><select id="rx-med" name="medId">${M.map((m) => `<option value="${m.id}">${esc(m.n)} ${esc(m.c)}</option>`).join("")}</select></div><div class="field"><label for="rx-kind">Categoria da prescrição</label><select id="rx-kind" name="kind"><option value="comum">Comum (cenário: 6 meses)</option><option value="continuo">Uso contínuo comum (6 meses)</option><option value="antibiotico">Antibiótico (10 dias)</option><option value="antibioticoContinuo">Antibiótico contínuo (3 meses)</option><option value="controlado">Controlado (30 dias)</option><option value="especializado">Especializado (exemplo: 90 dias)</option></select></div><div class="field"><label for="rx-type">Receituário apresentado</label><select id="rx-type" name="type"><option>Receita simples</option><option>Receita com retenção</option><option>Controle especial</option><option>Laudo + formulário</option></select></div><div class="field"><label for="rx-date">Data de emissão</label><input type="date" id="rx-date" name="date" value="${new Date().toLocaleDateString("en-CA")}"></div><div class="field"><label for="rx-conc">Concentração (opcional)</label><input id="rx-conc" name="concentration" placeholder="Ex.: 50 mg"></div><div class="field"><label for="rx-qty">Quantidade prescrita</label><input id="rx-qty" name="qty" type="number" min="1" value="30"></div></div><div class="field checkbox"><label><input type="checkbox" name="prescriber" checked> Prescritor identificado com nome e registro</label></div><div class="field"><label for="rx-photo">Foto da receita (opcional e não analisada)</label>
+<input id="rx-photo" type="file" accept="image/*" capture="environment" aria-describedby="photo-info">
+<p class="small muted" id="photo-info">A foto não é enviada nem armazenada. O protótipo não faz leitura automática.</p></div>
+<button class="btn primary" type="submit">${fcIcon("prescription")} Ver orientação sobre a receita</button></form><div id="rx-output">${app.recipe || ""}</div></section>`;
 }
 function unidades() {
-  return `<h1>Unidades participantes da simulação</h1><p class="sub">Localizações baseadas em estabelecimentos reais do DF. Horários de almoço, disponibilidade e estoques são simulados; confirme antes de ir.</p><div class="panel row"><label for="hour">Horário simulado</label><select id="hour">${[8, 10, 11, 12, 13, 15, 18, 21].map((h) => `<option ${app.hour === h ? "selected" : ""} value="${h}">${h}h</option>`).join("")}</select></div><div class="grid">${U.map((u) => `<article class="panel"><h3>${esc(u.n)}</h3><p class="small muted">${esc(u.ra)} · ${esc(u.t)} · ${u.comercial ? "REDE COMERCIAL · FILIAL FICTÍCIA" : "CNES fictício " + esc(u.cnes)}</p><p class="small"><b>Localização:</b> ${esc(u.addr || u.loc || u.ra)}</p><p class="small"><b>Horário:</b> ${scheduleText(u)}</p><p class="small muted"><b>Almoço:</b> ${breakText(u)} · <b>Carga diária:</b> ${workHours(u)}h ${reduced(u) ? "· horário reduzido" : ""}</p>${badge(isOpen(u) ? "verde" : "vermelho", isOpen(u) ? "Atendendo na simulação" : "Sem atendimento agora")}${closed(u) ? `<p class="small">Motivo: ${esc(closed(u))}</p>` : '<p class="small">Sem fechamento cadastrado para este horário.</p>'}${reduced(u) ? '<div class="alert info">Horário reduzido nesta unidade.</div>' : ""}<div class="inline-actions"><button class="btn sm" data-action="unit-consult" data-id="${u.id}">Consultar medicamentos</button><button class="btn sm" data-action="route-link" data-id="${u.id}">Ver rota</button></div></article>`).join("")}</div>`;
+  return `<h1>Unidades participantes da simulação</h1><p class="sub">Localizações baseadas em estabelecimentos reais do DF. Horários de almoço, disponibilidade e estoques são simulados; confirme antes de ir.</p><div class="panel row"><label for="hour">Horário simulado</label><select id="hour">${[8, 10, 11, 12, 13, 15, 18, 21].map((h) => `<option ${app.hour === h ? "selected" : ""} value="${h}">${h}h</option>`).join("")}</select></div><div class="grid">${U.map((u) => `<article class="panel"><h3>${esc(u.n)}</h3><p class="small muted">${esc(u.ra)} · ${esc(u.t)} · ${u.comercial ? "REDE COMERCIAL · FILIAL FICTÍCIA" : "CNES fictício " + esc(u.cnes)}</p><p class="small"><b>Localização:</b> ${esc(u.addr || u.loc || u.ra)}</p><p class="small"><b>Horário:</b> ${scheduleText(u)}</p><p class="small muted"><b>Almoço:</b> ${breakText(u)} · <b>Carga diária:</b> ${workHours(u)}h ${reduced(u) ? "· horário reduzido" : ""}</p>${badge(isOpen(u) ? "verde" : "vermelho", isOpen(u) ? "Atendimento no horário simulado" : "Sem atendimento no horário simulado")}${closed(u) ? `<p class="small">Motivo: ${esc(closed(u))}</p>` : '<p class="small">Sem fechamento cadastrado para este horário.</p>'}${reduced(u) ? '<div class="alert info">Horário reduzido nesta unidade.</div>' : ""}<div class="inline-actions"><button class="btn sm" data-action="unit-consult" data-id="${u.id}">Consultar medicamentos</button><button class="btn sm" data-action="route-link" data-id="${u.id}">Ver rota</button></div></article>`).join("")}</div>`;
 }
 function ajuda() {
   return `<section class="panel"><h2>Precisa de ajuda?</h2><p>Este protótipo mostra dados simulados e não realiza venda, reserva ou dispensação.</p><div class="step"><b>Como consultar?</b>Pesquise um medicamento, adicione os itens desejados e clique em “Ver unidades e disponibilidade”.</div><div class="step"><b>O estoque está verde. Posso ir buscar?</b>Não necessariamente. Confira o horário da farmácia, a presença do farmacêutico, a documentação e a disponibilidade junto à unidade oficial.</div><div class="step"><b>Outra pessoa pode retirar por mim?</b>Depende das exigências do serviço e do medicamento. Consulte previamente a unidade quanto a documento do paciente, representante e autorização.</div><div class="step"><b>Como conferir a receita?</b>Abra “Minhas receitas” e use a verificação demonstrativa. Ela não tem valor de aprovação.</div><div class="inline-actions"><button class="btn primary" data-nav="consulta">Pesquisar medicamento</button><button class="btn" data-nav="receitas">Conferir receita</button></div></section><section class="panel"><h3>Acessibilidade</h3><p>Botões amplos, labels para formulários, navegação por teclado e ajuste de tamanho de texto. A busca por voz depende do navegador e da permissão de microfone.</p><button class="btn" id="font-inline">Aumentar texto (Aa+)</button></section>`;
@@ -426,23 +540,13 @@ function bindView() {
   if (input) {
     input.addEventListener("input", (e) => {
       app.query = e.target.value;
-      const opts = M.filter(
-        (m) =>
-          (m.n + " " + m.a + " " + m.c)
-            .toLowerCase()
-            .includes(app.query.toLowerCase()) && !app.selected.includes(m.id),
-      ).slice(0, 12);
-      $("suggestions").innerHTML = suggestions(opts);
+      const opts=findMedMatches(app.query,8).map(x=>x.med).filter(m=>!app.selected.includes(m.id));
+      $("suggestions").innerHTML=suggestions(opts);
     });
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
-        const m = M.find((m) =>
-          (m.n + " " + m.a + " " + m.c)
-            .toLowerCase()
-            .includes(app.query.toLowerCase()),
-        );
-        if (m) action("add-med", m.id);
+        action("search");
       }
     });
   }
@@ -485,6 +589,10 @@ function bindView() {
         render();
       } else toast("Credenciais demonstrativas inválidas.");
     });
+  if ($("rx-photo"))
+    $("rx-photo").addEventListener("change", () => {
+      toast("Imagem selecionada somente no aparelho. Não há leitura automática.");
+    });
   if ($("recipe-form"))
     $("recipe-form").addEventListener("submit", (e) => {
       e.preventDefault();
@@ -519,9 +627,30 @@ function action(type, id) {
       if (Number(id) !== 0)
         toast("Este protótipo foca na disponibilidade de medicamentos.");
       break;
-    case "search":
-      route("consulta");
+    case "search": {
+      if (app.page !== "consulta") { route("consulta"); break; }
+      const query = app.query.trim().toLocaleLowerCase("pt-BR");
+      if (!query) {
+        if (app.selected.length) $("results")?.scrollIntoView({ behavior:"smooth" });
+        else toast("Digite ou escolha um medicamento para continuar.");
+        break;
+      }
+      if (query.length < 2) { toast("Digite pelo menos duas letras do medicamento."); break; }
+      const matches=findMedMatches(query,8).filter(x=>!app.selected.includes(x.med.id));
+      if (!matches.length) { toast("Não encontrei esse nome. Veja as sugestões ou tente outra palavra."); break; }
+      if (matches.length>1 && matches[1].score>=matches[0].score-16) {
+        toast("Existem apresentações parecidas. Escolha uma sugestão para continuar.");
+        $("suggestions")?.scrollIntoView({behavior:"smooth",block:"nearest"});
+        break;
+      }
+      const found=matches[0].med;
+      if (!app.selected.includes(found.id)) app.selected.push(found.id);
+      app.showAllEasy = false;
+      app.query = "";
+      render();
+      $("results")?.scrollIntoView({ behavior:"smooth" });
       break;
+    }
     case "add-med": {
       const n = Number(id);
       if (!app.selected.includes(n)) app.selected.push(n);
@@ -534,6 +663,7 @@ function action(type, id) {
       render();
       break;
     case "reset-search":
+      app.showAllEasy = false;
       app.selected = [];
       app.query = "";
       render();
@@ -602,8 +732,9 @@ function action(type, id) {
       const u = unit(app.unit);
       const a = $("break-start").value,
         b = $("break-end").value;
-      if (a && b && Number(a) >= Number(b)) {
-        toast("Fim do intervalo deve ser após o início.");
+      if ((a && !b) || (!a && b) ||
+          (a && b && (Number(a) >= Number(b) || Number(a) < u.ph[0] || Number(b) > u.ph[1]))) {
+        toast("Informe o intervalo completo dentro do horário da farmácia.");
         return;
       }
       u.phOn = $("ph-on").checked;
@@ -634,6 +765,14 @@ function action(type, id) {
       break;
     case "voice":
       speech();
+      break;
+    case "read":
+      readPage();
+      break;
+    case "show-more-units":
+      app.showAllEasy = true;
+      render();
+      $("results")?.scrollIntoView({behavior:"smooth"});
       break;
     case "clear-data":
       if (
@@ -676,31 +815,79 @@ function moveStock(id, d) {
   }
   updateStock(id, prev + d, false);
 }
+let activeRecognition=null;
+function voiceUI(listening, message="Ouvindo... pode falar o nome do remédio.") {
+  const display=$("voice-status");
+  display.hidden=!listening;
+  $("voice-message").textContent=message;
+  document.querySelectorAll('[data-action="voice"],#voice-desktop').forEach(btn=>{
+    btn.setAttribute("aria-pressed",String(listening));
+    btn.classList.toggle("is-listening",listening);
+  });
+}
+function stopListening() {
+  if (activeRecognition) {
+    const r=activeRecognition;
+    activeRecognition=null;
+    try {r.abort();}catch(e){}
+  }
+  voiceUI(false);
+}
 function speech() {
-  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (activeRecognition) {stopListening();return;}
+  const Rec=window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!Rec) {
-    toast("Busca por voz indisponível neste navegador. Digite o medicamento.");
+    toast("Busca por voz indisponível. Digite o nome do remédio.");
     return;
   }
   try {
-    const r = new Rec();
-    r.lang = "pt-BR";
-    r.interimResults = false;
-    r.onresult = (e) => {
-      app.query = e.results[0][0].transcript;
+    const r=new Rec();
+    activeRecognition=r;
+    r.lang="pt-BR";
+    r.interimResults=true;
+    r.maxAlternatives=1;
+    r.continuous=false;
+    r.onstart=()=>voiceUI(true);
+    r.onresult=e=>{
+      const entry=e.results[e.resultIndex] || e.results[0];
+      const text=entry?.[0]?.transcript?.trim();
+      if (!text) return;
+      $("voice-message").textContent=entry.isFinal?"Identificando o remédio...":"Ouvindo: "+text.slice(0,90);
+      if (!entry.isFinal) return;
+      const canonical=extractMedName(text);
+      app.query=canonical || text;
+      activeRecognition=null;
+      try {r.stop();} catch(e){}
+      voiceUI(false);
       route("consulta");
+      toast(canonical ? `Entendi: ${canonical}. Confira a apresentação antes de continuar.` :
+        "Confira o nome e selecione a apresentação correspondente.");
+      $("medicine-search")?.focus({preventScroll:true});
     };
-    r.onerror = () => toast("Não foi possível captar o áudio.");
+    r.onerror=e=>{
+      if (r!==activeRecognition) return;
+      activeRecognition=null;
+      voiceUI(false);
+      const errors={"not-allowed":"Permita o microfone nas configurações do navegador.",
+        "service-not-allowed":"O serviço de voz não está permitido.",
+        "no-speech":"Não ouvi nenhuma palavra. Tente novamente.",
+        "audio-capture":"Microfone indisponível.","network":"Sem conexão com o reconhecimento de voz."};
+      toast(errors[e.error] || "Não consegui ouvir. Digite o nome do remédio.");
+    };
+    r.onend=()=>{
+      if (r!==activeRecognition) return;
+      activeRecognition=null;
+      voiceUI(false);
+    };
+    voiceUI(true,"Ativando microfone...");
     r.start();
-  } catch (e) {
+  } catch(e) {
+    activeRecognition=null;
+    voiceUI(false);
     toast("Não foi possível iniciar o microfone.");
   }
 }
-function font() {
-  app.font = (app.font + 1) % 3;
-  document.documentElement.style.fontSize = [16, 18, 20][app.font] + "px";
-  toast("Tamanho de texto ajustado.");
-}
+function font() { adjustText(2); }
 // Eventos delegados: funcionam também nos botões criados dinamicamente nos resultados e nas orientações.
 $("content").addEventListener("click", (event) => {
   const target = event.target.closest("button[data-action],button[data-nav]");
@@ -714,15 +901,23 @@ document
   )
   .forEach((b) => b.addEventListener("click", () => route(b.dataset.nav)));
 $("font-toggle").addEventListener("click", font);
+$("font-decrease").addEventListener("click", () => adjustText(-2));
+$("read-toggle").addEventListener("click", readPage);
 $("voice-desktop").addEventListener("click", speech);
+$("voice-stop").addEventListener("click",stopListening);
 $("global-search").addEventListener(
   "input",
   (e) => (app.query = e.target.value),
 );
 $("global-search").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") route("consulta");
+  if (e.key === "Enter") {
+    route("consulta");
+    action("search");
+  }
 });
 document.addEventListener("click", (e) => {
   if (e.target.id === "font-inline") font();
 });
+document.querySelectorAll("[data-icon]").forEach(el => { el.innerHTML = fcIcon(el.dataset.icon); });
+initPreferences();
 render();

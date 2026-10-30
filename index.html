@@ -53,10 +53,12 @@
             title="Busca por voz"
             aria-label="Buscar por voz"
           >
-            ♩
+            <span data-icon="mic">🎙</span>
           </button>
         </div>
         <div class="header-actions">
+          <button class="text-btn" id="read-toggle" type="button" aria-label="Ouvir texto da página">🔊 Ouvir</button>
+          <button class="text-btn" id="font-decrease" type="button" aria-label="Diminuir texto">A−</button>
           <button
             class="text-btn theme-toggle"
             id="theme-toggle"
@@ -68,9 +70,9 @@
           ><button
             class="text-btn"
             id="font-toggle"
-            aria-label="Aumentar ou diminuir texto"
+            aria-label="Aumentar texto"
           >
-            Aa +</button
+            A+</button
           ><button
             class="text-btn account-shortcut"
             data-nav="acesso"
@@ -94,33 +96,32 @@
     </nav>
     <main id="content" tabindex="-1" class="main"></main>
     <nav class="mobile-nav" aria-label="Navegação inferior">
-      <button data-nav="inicio"><span>⌂</span>Início</button
-      ><button data-nav="receitas"><span>▤</span>Receitas</button
-      ><button data-nav="unidades"><span>▣</span>Unidades</button
-      ><button data-nav="ajuda"><span>♧</span>Ajuda</button
-      ><button data-nav="acesso"><span>♙</span>Conta</button>
+      <button data-nav="inicio"><span data-icon="home">⌂</span>Início</button
+      ><button data-nav="receitas"><span data-icon="prescription">▤</span>Receitas</button
+      ><button data-nav="unidades"><span data-icon="hospital">▣</span>Unidades</button
+      ><button data-nav="ajuda"><span data-icon="help">♧</span>Ajuda</button
+      ><button data-nav="acesso"><span data-icon="account">♙</span>Conta</button>
     </nav>
     <footer>
       <div class="footer-inner">
         <b><span class="brand-mark small">✚</span> farmácia certa DF</b
         ><span
-          >Protótipo de hackathon · dados 100% fictícios · não é um serviço
+          >Protótipo de hackathon · estoques e horários simulados · não é um serviço
           oficial do SUS</span
         ><button class="link-btn" data-nav="sobre">Sobre e privacidade</button>
       </div>
     </footer>
+    <div id="voice-status" class="voice-status" role="status" aria-live="polite" aria-atomic="true" hidden>
+      <div class="voice-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <span id="voice-message">Ouvindo... pode falar o nome do remédio.</span>
+      <button class="voice-stop" id="voice-stop" type="button" aria-label="Parar de ouvir">Parar</button>
+    </div>
     <div id="toast" role="status" aria-live="polite"></div>
-    <script>
-      // Portão demonstrativo: não é autenticação real e não protege informações.
-      try {
-        if (sessionStorage.getItem("fcdf-demo-access") !== "yes")
-          location.replace("login.html");
-      } catch (e) {
-        location.replace("login.html");
-      }
-    </script>
     <script src="theme.js"></script>
     <script src="data.js"></script>
+    <script src="icons.js"></script>
+    <script src="med-search.js"></script>
+    <script src="med-images.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

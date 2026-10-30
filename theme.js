@@ -16,7 +16,9 @@
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.content = theme === "dark" ? "#0b1623" : "#ffffff";
     document.querySelectorAll(".theme-toggle").forEach((b) => {
-      b.textContent = theme === "dark" ? "☀️ Modo claro" : "🌙 Modo noturno";
+      b.innerHTML = theme === "dark"
+        ? '<span aria-hidden="true">☀️</span><span class="theme-label"> Modo claro</span>'
+        : '<span aria-hidden="true">🌙</span><span class="theme-label"> Modo noturno</span>';
       b.setAttribute("aria-pressed", String(theme === "dark"));
       b.setAttribute(
         "aria-label",
@@ -30,7 +32,7 @@
   const initial = stored();
   document.documentElement.dataset.theme = initial;
   document.documentElement.style.colorScheme = initial;
-  document.addEventListener("DOMContentLoaded", () => {
+  function initialize() {
     set(initial);
     document.querySelectorAll(".theme-toggle").forEach((b) => {
       b.addEventListener("click", () => {
@@ -39,5 +41,7 @@
         );
       });
     });
-  });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initialize, { once: true });
+  else initialize();
 })();

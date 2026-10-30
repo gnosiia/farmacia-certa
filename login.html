@@ -55,7 +55,11 @@
           ><span class="shield" aria-hidden="true">✧</span>
         </div>
         <h2 id="title">Boas-vindas!</h2>
-        <p class="subtitle">Faça login para continuar no Farmácia Certa DF.</p>
+        <p class="subtitle">Entre com um perfil de teste ou crie um cadastro fictício. Você também pode consultar sem entrar.</p>
+        <div class="access-tabs" role="group" aria-label="Forma de acesso">
+          <button type="button" id="tab-existing" class="tab-selected" aria-pressed="true">Perfis prontos</button>
+          <button type="button" id="tab-new" aria-pressed="false">Criar perfil</button>
+        </div>
         <div class="warning">
           <strong>SIMULAÇÃO — NÃO É GOV.BR</strong
           ><span
@@ -65,13 +69,18 @@
         </div>
         <form id="demo-login">
           <label for="profile">Escolha um cidadão fictício cadastrado</label
-          ><select id="profile" name="profile" required>
+          ><select id="profile" name="profile">
             <option value="">Selecione seu perfil de demonstração</option>
           </select>
           <p class="hint">
             Cada perfil possui informações de exemplo vinculadas ao próprio
             cadastro.
           </p>
+          <details class="email-login"><summary>Já criei meu perfil: entrar com e-mail fictício</summary>
+            <label for="email-login">E-mail usado no cadastro de demonstração</label>
+            <input id="email-login" type="email" placeholder="exemplo@teste.com" autocomplete="off">
+            <p class="hint">O acesso por e-mail não verifica identidade. Use apenas dados inventados.</p>
+          </details>
           <label for="password">Senha de demonstração</label>
           <div class="password-field">
             <input
@@ -80,7 +89,6 @@
               type="password"
               placeholder="Digite qualquer coisa"
               autocomplete="off"
-              required
               maxlength="80"
             /><button
               type="button"
@@ -92,8 +100,8 @@
             </button>
           </div>
           <p class="hint">
-            Escolha um dos usuários cadastrados e digite qualquer senha de
-            teste. Não existe verificação real.
+            Para um perfil pronto, digite qualquer senha inventada.
+            Para um perfil que você criou, use o e-mail fictício acima. Não existe verificação real.
           </p>
           <button type="submit" class="submit" id="enter">
             Entrar <span aria-hidden="true">→</span>
@@ -105,9 +113,21 @@
             class="feedback"
           ></p>
         </form>
-        <div class="divider"><span>Ambiente 100% fictício</span></div>
+        <form id="demo-register" hidden>
+          <label for="register-name">Nome fictício</label>
+          <input id="register-name" type="text" maxlength="70" autocomplete="off" placeholder="Ex.: Maria de Exemplo" required />
+          <label for="register-birth">Data de nascimento de exemplo</label>
+          <input id="register-birth" type="date" required />
+          <label for="register-email">E-mail fictício</label>
+          <input id="register-email" type="email" maxlength="90" autocomplete="off" placeholder="exemplo@teste.com" required />
+          <p class="hint">O site usa a mesma navegação simples para todas as idades.</p>
+          <button type="submit" class="submit">Criar perfil de teste <span aria-hidden="true">→</span></button>
+          <p id="register-feedback" role="status" aria-live="polite" class="feedback"></p>
+        </form>
+        <div class="divider"><span>Ou continue sem cadastro</span></div>
+        <a class="guest-link" href="index.html">Explorar os medicamentos e farmácias <span aria-hidden="true">→</span></a>
         <p class="bottom">
-          Este acesso apenas simula a experiência de login. Não se conecta ao
+          Este acesso apenas simula a experiência de login. Os perfis são armazenados só neste navegador, sem senha real. Não se conecta ao
           gov.br, SUS ou DATASUS.
         </p>
       </section>
