@@ -414,3 +414,24 @@ html[data-theme="dark"] .login-theme-toggle {
     padding-top: 56px;
   }
 }
+/* Cadastro fictício integrado e acesso público sem login */
+.access-tabs { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:18px 0; }
+.access-tabs button { min-height:46px; background:transparent; color:#155587; border:1px solid #b8cee0; border-radius:10px; font-weight:700; cursor:pointer; }
+.access-tabs .tab-selected { background:#1760a7; color:#fff; border-color:#1760a7; }
+#demo-register label { display:block; margin:14px 0 7px; font-size:.9rem; font-weight:700; }
+#demo-register input { width:100%; display:block; min-height:50px; padding:11px 13px; border:1.5px solid #a9c2d5; border-radius:10px; }
+.guest-link { display:flex; justify-content:center; align-items:center; padding:13px 10px; border:2px solid #1760a7; border-radius:12px; color:#1760a7; text-decoration:none; font-weight:750; text-align:center; min-height:52px; }
+.guest-link:hover { background:#e8f3fc; }
+html[data-theme="dark"] .access-tabs button { color:#a9d9ff; border-color:#6983a1; }
+html[data-theme="dark"] .access-tabs .tab-selected { background:#75bbfa; color:#0b1d2d; }
+html[data-theme="dark"] .guest-link { border-color:#a9d9ff; color:#a9d9ff; }
+html[data-theme="dark"] .guest-link:hover { background:#26394e; }
+html[data-theme="dark"] #demo-register input { background:#102b40; color:#eaf5ff; border-color:#799fba; }
+
+.email-login { margin:12px 0; border:1px solid #c1d7e5; border-radius:10px; padding:11px 12px; }
+.email-login summary { cursor:pointer; font-size:.9rem; font-weight:750; color:#165b93; }
+.email-login label { display:block; margin:14px 0 7px; font-size:.88rem; font-weight:700; }
+.email-login input { width:100%; min-height:46px; border:1.5px solid #a9c2d5; border-radius:10px; padding:10px; }
+html[data-theme="dark"] .email-login { border-color:#7891a6; }
+html[data-theme="dark"] .email-login summary { color:#a9d9ff; }
+html[data-theme="dark"] .email-login input { background:#102b40; color:#eaf5ff; border-color:#799fba; }
