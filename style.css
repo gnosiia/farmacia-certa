@@ -11,6 +11,14 @@
   --green: #236a4d;
   --warning: #865e0d;
   --red: #a02b34;
+  --surface: #ffffff;
+  --surface-muted: #f1f7fc;
+  --surface-subtle: #f4f8fa;
+  --field: #ffffff;
+  --focus: #f3b63f;
+  --button-text: #ffffff;
+  --footer: #f0f5f8;
+  --mobile-active: #eef5fc;
   --shadow: 0 5px 20px #18374d0b;
   font-size: 16px;
   color-scheme: light;
@@ -45,7 +53,7 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 a:focus-visible {
-  outline: 3px solid #f3b63f;
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
 .sr-only {
@@ -63,10 +71,10 @@ a:focus-visible {
   left: 5px;
   top: 5px;
   z-index: 30;
-  background: white;
+  background: var(--surface);
 }
 .header {
-  background: white;
+  background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
 .header-inner {
@@ -140,7 +148,7 @@ a:focus-visible {
 .text-btn {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #f1f7fc;
+  background: var(--surface-muted);
   color: var(--blue);
   padding: 8px;
   font-size: 0.8rem;
@@ -159,7 +167,7 @@ a:focus-visible {
   display: flex;
   gap: 30px;
   justify-content: center;
-  background: white;
+  background: var(--surface);
   border-bottom: 1px solid var(--line);
   padding: 8px 12px;
 }
@@ -213,7 +221,7 @@ a:focus-visible {
   align-items: center;
   justify-content: center;
   gap: 9px;
-  background: white;
+  background: var(--surface);
   color: var(--blue);
   border: 1.5px solid #a8becd;
   border-radius: 10px;
@@ -226,7 +234,7 @@ a:focus-visible {
 .btn.primary {
   background: var(--blue);
   border-color: var(--blue);
-  color: white;
+  color: var(--button-text);
   box-shadow: 0 3px 7px #124f8330;
 }
 .btn.primary:hover {
@@ -264,7 +272,7 @@ a:focus-visible {
 .category {
   border: 1px solid var(--line);
   border-radius: 13px;
-  background: white;
+  background: var(--surface);
   min-height: 92px;
   padding: 16px;
   display: flex;
@@ -320,7 +328,7 @@ a:focus-visible {
   margin-left: auto;
 }
 .panel {
-  background: white;
+  background: var(--field);
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 24px;
@@ -383,7 +391,7 @@ a:focus-visible {
   width: 100%;
   min-height: 46px;
   padding: 10px 12px;
-  background: white;
+  background: var(--field);
   color: var(--navy);
   border: 1.5px solid #b9ccd7;
   border-radius: 10px;
@@ -411,7 +419,7 @@ a:focus-visible {
   border: 1.5px solid #7aa1bb;
   border-radius: 11px;
   padding: 13px;
-  background: white;
+  background: var(--surface);
 }
 .searchline .btn {
   white-space: nowrap;
@@ -545,7 +553,7 @@ th {
   white-space: nowrap;
 }
 th {
-  background: #f4f8fa;
+  background: var(--surface-subtle);
 }
 .admin-table input {
   width: 85px;
@@ -573,7 +581,7 @@ th {
   color: var(--muted);
 }
 footer {
-  background: #f0f5f8;
+  background: var(--footer);
   border-top: 1px solid var(--line);
 }
 .footer-inner {
@@ -602,7 +610,7 @@ footer {
   bottom: 22px;
   transform: translateX(-50%);
   background: var(--navy);
-  color: white;
+  color: var(--button-text);
   padding: 12px 17px;
   border-radius: 9px;
   box-shadow: var(--shadow);
@@ -623,7 +631,7 @@ footer {
 .segment button {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: white;
+  background: var(--surface);
   padding: 8px 11px;
   color: var(--blue);
 }
@@ -740,7 +748,7 @@ footer {
     bottom: 0;
     left: 0;
     right: 0;
-    background: white;
+    background: var(--surface);
     border-top: 1px solid var(--line);
     padding: 5px 5px calc(5px + env(safe-area-inset-bottom));
     z-index: 20;
@@ -762,7 +770,7 @@ footer {
     line-height: 1.2;
   }
   .mobile-nav button.active {
-    background: #eef5fc;
+    background: var(--mobile-active);
     color: var(--blue);
     border-radius: 9px;
   }
@@ -846,7 +854,7 @@ footer {
   padding-top: 28px;
 }
 .auth-card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 20px;
   padding: 32px;
@@ -874,7 +882,7 @@ footer {
   padding: 11px;
   border-radius: 10px;
   border: 1px solid #a5bacb;
-  background: white;
+  background: var(--field);
   color: var(--navy);
 }
 .auth-wide {
@@ -984,6 +992,14 @@ html[data-theme="dark"] {
   --green: #99ebbf;
   --warning: #f8d88a;
   --red: #ffa5b0;
+  --surface: #162739;
+  --surface-muted: #1a3349;
+  --surface-subtle: #102333;
+  --field: #112234;
+  --focus: #ffd166;
+  --button-text: #07131f;
+  --footer: #102333;
+  --mobile-active: #25445d;
   --shadow: 0 5px 20px #0004;
 }
 html[data-theme="dark"] body {
@@ -1012,6 +1028,39 @@ html[data-theme="dark"] #citizen-profile {
   background: #112234;
   color: var(--navy);
   border-color: #486174;
+}
+html[data-theme="dark"] .desktop-search,
+html[data-theme="dark"] .btn,
+html[data-theme="dark"] .text-btn,
+html[data-theme="dark"] .admin-table input {
+  background: var(--surface);
+  color: var(--navy);
+}
+html[data-theme="dark"] .btn.primary,
+html[data-theme="dark"] .segment button.selected {
+  background: var(--blue);
+  color: var(--button-text);
+}
+html[data-theme="dark"] .demo-badge {
+  background: #493913;
+  color: #ffe59e;
+}
+html[data-theme="dark"] .brand-second {
+  color: #8ed1e5;
+}
+html[data-theme="dark"] .iconbtn,
+html[data-theme="dark"] .link-btn {
+  color: var(--blue);
+}
+html[data-theme="dark"] .hero-art {
+  background: radial-gradient(circle, #254a67 58%, transparent 60%);
+}
+html[data-theme="dark"] .skip:focus {
+  background: var(--surface);
+  color: var(--navy);
+}
+html[data-theme="dark"] .mobile-nav {
+  background: var(--surface);
 }
 html[data-theme="dark"] .hero,
 html[data-theme="dark"] .auth-side {
